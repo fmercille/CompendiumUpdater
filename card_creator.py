@@ -415,6 +415,7 @@ class CardCreator:
             'Swiftstrike',
             'Tunneling',
             'Valorous',
+            'Verdict',
         ]
 
         k = []
