@@ -11,11 +11,34 @@ class HexCompendium:
     PASSWORD = os.environ['COMPENDIUM_PASS']
     LOG_FILES = { 'created': 'log_created.txt', 'error': 'log_error.txt' }
     edit_token = None
+    all_pages = []
 
     def __init__(self):
         cookieProcessor = urllib.request.HTTPCookieProcessor()
         self.opener = urllib.request.build_opener(cookieProcessor)
         self.login()
+
+        next_page_to_load = '0'
+        num_pages_per_load = 5000
+        while True:
+            all_pages_data = {
+                'action': 'query',
+                'list': 'allpages',
+                'aplimit': num_pages_per_load,
+                'apfrom': next_page_to_load,
+            }
+
+            response = self.call_api(all_pages_data)
+            pages = response['query']['allpages']
+
+            for page in pages:
+                self.all_pages.append(page['title'])
+
+            if 'continue' in response and 'apcontinue' in response['continue']:
+                next_page_to_load = response['continue']['apcontinue']
+            else:
+                print("Loaded {0} page names".format(len(self.all_pages)))
+                break
 
     def login(self):
         # Fetch login token
@@ -48,16 +71,7 @@ class HexCompendium:
         return json.loads(response.read().decode('utf-8'))
 
     def page_exists(self, name):
-        check_data = {
-            'action': 'query',
-            'titles': name,
-            'prop': 'info',
-            'inprop': 'url'
-        }
-        response = self.call_api(check_data)
-        pageid = response['query']['pages']
-
-        return list(response['query']['pages'].keys())[0] != '-1'
+        return name in self.all_pages
 
     def delete_page(self, pageid):
         # Fetch edit token
