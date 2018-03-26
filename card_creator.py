@@ -363,7 +363,10 @@ class CardCreator:
             for i in range(len(sections)):
                 section_key = re.sub(r'[\[\],:; "()/\']|</?b>','', re.sub(r'<b>([^<]*)</b>', replace_name_by_id, re.sub(r'#[^#]+#', '', sections[i])).lower()).replace('.','d').replace('-','m').replace('+','p')
                 if section_key in display_text:
-                    sections[i] = display_text[section_key]
+                    if display_text[section_key] == '[null]':
+                        sections[i] = ''
+                    else:
+                        sections[i] = display_text[section_key]
 
         return "\n\n".join(sections)
 
@@ -463,5 +466,19 @@ class CardCreator:
 
         # Resources
         game_text = re.sub(r'\[L(\d)\]\[R(\d)\]', r'<\1/\2>', game_text)
+
+        link_words = [
+            'bury',
+            'buries',
+            'copy',
+            'replica',
+            'revert',
+            'sacrifice',
+            'summon',
+            'transform'
+        ]
+
+        for link in link_words:
+            game_text = re.sub(r'\b(' + link + r')\b', r'[[\1]]', game_text, flags=re.IGNORECASE)
 
         return game_text
