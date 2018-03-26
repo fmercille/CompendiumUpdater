@@ -355,13 +355,13 @@ class CardCreator:
 
         def replace_name_by_id(name):
             try:
-                return json.loads(urllib.request.urlopen(self.HPT_CARD_ENDPOINT.format(name.group(1))).read().decode('utf-8'))['id'].replace('-','m') + name.group(1)
+                return json.loads(urllib.request.urlopen(self.HPT_CARD_ENDPOINT.format(name.group(1))).read().decode('utf-8'))['id'] + name.group(1)
             except:
                 return name.group(1)
 
         if type(display_text) is dict:
             for i in range(len(sections)):
-                section_key = re.sub(r'[\[\],:; "()\']|</?b>','', re.sub(r'<b>([^<]*)</b>', replace_name_by_id, re.sub(r'#[^#]+#', '', sections[i])).lower()).replace('.','d')
+                section_key = re.sub(r'[\[\],:; "()/\']|</?b>','', re.sub(r'<b>([^<]*)</b>', replace_name_by_id, re.sub(r'#[^#]+#', '', sections[i])).lower()).replace('.','d').replace('-','m').replace('+','p')
                 if section_key in display_text:
                     sections[i] = display_text[section_key]
 
