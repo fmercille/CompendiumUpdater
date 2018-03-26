@@ -9,7 +9,7 @@ def main():
     num_cards_processed = 0
 
     for card in c.all_cards_data:
-        if card['card_rarity'] in ('Common', 'Uncommon', 'Rare', 'Legendary'):
+        if card['card_rarity'] in ('Common', 'Uncommon', 'Rare', 'Legendary') and card['equipment_modified_card'] == False:
             card_name = card['name']
 
             if h.page_exists(card_name):

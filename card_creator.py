@@ -55,6 +55,8 @@ class CardCreator:
         return None
 
     def format_card_data(self, card_data):
+        print("Processing {0}".format(card_data['name']))
+
         try:
             card_set = json.loads(urllib.request.urlopen(self.HPT_SET_ENDPOINT.format(card_data['hex_card_set_id'])).read().decode('utf-8'))['name']
         except:
@@ -91,8 +93,8 @@ class CardCreator:
 
         card_text = self.extract_display_text(card_data['game_text'], (None if card_data['display_text'] is None else json.loads(card_data['display_text']) ))
 
-        if card_text is None:
-            card_text = ''
+        if card_text is None or len(card_text) == 0:
+            card_text = 'None'
 
         sockets = ''
 
@@ -108,13 +110,16 @@ class CardCreator:
         
         unique = 'Yes' if card_data['unique'] == 1 else ''
 
-        cost = str(card_data['resource_cost'])
-        if card_data['variable_cost'] == 1:
-            cost += 'X'
-        if card_data['variable_cost_double'] == 1:
-            cost += 'XX'
-        if len(cost) > 1 and cost[0] == '0':
-            cost = cost[1:]
+        if card_data['card_type'] == 'Resource':
+            cost = ''
+        else:
+            cost = str(card_data['resource_cost'])
+            if card_data['variable_cost'] == 1:
+                cost += 'X'
+            if card_data['variable_cost_double'] == 1:
+                cost += 'XX'
+            if len(cost) > 1 and cost[0] == '0':
+                cost = cost[1:]
 
         attack = card_data['base_attack_value'] if 'Troop' in card_data['card_type'] else ''
         defense = card_data['base_health_value'] if 'Troop' in card_data['card_type'] else ''
@@ -135,7 +140,7 @@ class CardCreator:
         if artist is not None and len(artist) > 0:
             artist = '[[{0}]]'.format(artist)
 
-        lore_text = '' if card_data['flavor_text'] is None else card_data['flavor_text'].replace(r'\n', "\n")
+        lore_text = 'None' if card_data['flavor_text'] is None else card_data['flavor_text'].replace(r'\n', "\n")
 
         image_link = ''
         if re.search(r'[:\']', card_data['name']):
@@ -414,7 +419,7 @@ class CardCreator:
 
         k = []
         for keyword in keywords:
-            if ('<b>{0}</b>'.format(keyword)) in game_text:
+            if re.search(r'<b>{0}( \d)?</b>'.format(keyword), game_text):
                 k.append(keyword)
 
         return k
@@ -433,12 +438,14 @@ class CardCreator:
             '[ARDENT]': '[[File:ardenticon.png|21px]]',
             '[ARROWR]': '→',
             '[BASIC]': '[[File:Basic.png]]',
-            '<b>': '[[',
-            '</b>': ']]',
+            '[ONE-SHOT]': '[[File:1shot.png]]',
         }
 
         for key, value in symbols.items():
             game_text = game_text.replace(key, value)
+
+        # Keywords in bold sometimes have a number that we need to not include in the link (e.g. Gladiator 1)
+        game_text = re.sub(r'<b>([^<\d]+)( \d)?</b>', r'[[\1]]\2', game_text)
 
         # Cost circle
         game_text = re.sub(r'\[\((\d)\)\]', r'[[File:pay\1.png|14px]]', game_text)
