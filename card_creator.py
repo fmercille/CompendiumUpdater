@@ -453,6 +453,7 @@ class CardCreator:
 
         # Cost circle
         game_text = re.sub(r'\[\((\d)\)\]', r'[[File:pay\1.png|14px]]', game_text)
+        game_text = re.sub(r'\[\((X)\)\]', r'[[File:payx.png|14px]]', game_text)
         game_text = re.sub(r'\[\(10\)\]', r'[[File:pay1.png|14px]][[File:pay0.png|14px]]', game_text)
 
         # Charge cost square
